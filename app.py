@@ -128,38 +128,20 @@ def add_service():
         service_type = request.form['service_type']
 
         conn = sqlite3.connect('service_center.db')
-
         cursor = conn.cursor()
 
-        # create services table if missing
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS services (
-
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-            customer_name TEXT,
-
-            service_type TEXT
-        )
-        ''')
-
-        # insert service
         cursor.execute(
-            '''
-            INSERT INTO services
-            (customer_name, service_type)
-            VALUES (?, ?)
-            ''',
+            "INSERT INTO services (customer_name, service_type) VALUES (?, ?)",
             (customer_name, service_type)
         )
 
         conn.commit()
-
         conn.close()
 
-        return redirect('/view_services')
+        return redirect('/dashboard')
 
     return render_template('add_service.html')
+
 
 # view services
 @app.route('/view_services')
