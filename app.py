@@ -43,34 +43,14 @@ def dashboard():
 
     cursor = conn.cursor()
 
-    cursor.execute(
-        '''
-        CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            phone TEXT,
-            vehicle_number TEXT
-        )
-        '''
-    )
-
-    cursor.execute(
-        '''
-        CREATE TABLE IF NOT EXISTS services (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_name TEXT,
-            service_type TEXT,
-            amount INTEGER
-        )
-        '''
-    )
-
-    conn.commit()
-
+    # total customers
     cursor.execute("SELECT COUNT(*) FROM customers")
+
     customers = cursor.fetchone()[0]
 
+    # total services
     cursor.execute("SELECT COUNT(*) FROM services")
+
     services = cursor.fetchone()[0]
 
     revenue = 0
@@ -112,7 +92,7 @@ def add_customer():
 
         conn.close()
 
-        return redirect('/view_customer')
+        return redirect('/dashboard')
 
     return render_template('add_customer.html')
 
@@ -144,13 +124,26 @@ def add_service():
 
     if request.method == 'POST':
 
-        customer_name = request.form.get('customer_name')
-        service_type = request.form.get('service_type')
+        customer_name = request.form['customer_name']
+        service_type = request.form['service_type']
 
         conn = sqlite3.connect('service_center.db')
 
         cursor = conn.cursor()
 
+        # create services table if missing
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS services (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            customer_name TEXT,
+
+            service_type TEXT
+        )
+        ''')
+
+        # insert service
         cursor.execute(
             '''
             INSERT INTO services
@@ -164,10 +157,9 @@ def add_service():
 
         conn.close()
 
-        return redirect('/dashboard')
+        return redirect('/view_services')
 
     return render_template('add_service.html')
-
 
 # view services
 @app.route('/view_services')
@@ -187,6 +179,7 @@ def view_services():
         'view_services.html',
         services=services
     )
+
 
 # logout
 @app.route('/logout')
