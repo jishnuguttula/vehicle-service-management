@@ -91,9 +91,9 @@ def add_customer():
 
     if request.method == 'POST':
 
-        name = request.form['name']
-        phone = request.form['phone']
-        vehicle_number = request.form['vehicle_number']
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        vehicle_number = request.form.get('vehicle_number')
 
         conn = sqlite3.connect('service_center.db')
 
@@ -101,33 +101,25 @@ def add_customer():
 
         cursor.execute(
             '''
-            CREATE TABLE IF NOT EXISTS customers (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                phone TEXT,
-                vehicle_number TEXT
-            )
-            '''
-        )
-
-        cursor.execute(
-            '''
-            INSERT INTO customers(name, phone, vehicle_number)
+            INSERT INTO customers
+            (name, phone, vehicle_number)
             VALUES (?, ?, ?)
             ''',
             (name, phone, vehicle_number)
         )
 
         conn.commit()
+
         conn.close()
 
-        return redirect('/dashboard')
+        return redirect('/view_customer')
 
     return render_template('add_customer.html')
 
+
 # view customers
 @app.route('/view_customer')
-def view_customers():
+def view_customer():
 
     conn = sqlite3.connect('service_center.db')
 
@@ -137,11 +129,13 @@ def view_customers():
 
     customers = cursor.fetchall()
 
+    print(customers)
+
     conn.close()
 
     return render_template(
         'view_customer.html',
-        customer=customers
+        customers=customers
     )
 
 # add services
