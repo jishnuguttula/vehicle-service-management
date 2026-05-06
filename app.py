@@ -133,7 +133,7 @@ def view_customers():
 
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM customer")
+    cursor.execute("SELECT * FROM customers")
 
     customers = cursor.fetchall()
 
@@ -141,7 +141,7 @@ def view_customers():
 
     return render_template(
         'view_customer.html',
-        customer=customer
+        customer=customers
     )
 
 # add services
