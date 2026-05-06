@@ -126,22 +126,22 @@ def add_customer():
     return render_template('add_customer.html')
 
 # view customers
-@app.route('/view_customers')
+@app.route('/view_customer')
 def view_customers():
 
     conn = sqlite3.connect('service_center.db')
 
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM customers")
+    cursor.execute("SELECT * FROM customer")
 
     customers = cursor.fetchall()
 
     conn.close()
 
     return render_template(
-        'view_customers.html',
-        customers=customers
+        'view_customer.html',
+        customer=customer
     )
 
 # add services
