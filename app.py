@@ -131,6 +131,8 @@ def view_customers():
 
     conn = sqlite3.connect('service_center.db')
 
+    conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM customers")
@@ -144,18 +146,31 @@ def view_customers():
         customers=customers
     )
 
+
 # add services
 @app.route('/add_service', methods=['GET', 'POST'])
 def add_service():
 
     if request.method == 'POST':
 
-        customer_name = request.form['customer_name']
-        service_type = request.form['service_type']
+        customer_name = request.form.get('customer_name')
+        service_type = request.form.get('service_type')
 
         conn = sqlite3.connect('service_center.db')
 
         cursor = conn.cursor()
+
+        # recreate services table safely
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS services (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            customer_name TEXT,
+
+            service_type TEXT
+        )
+        ''')
 
         cursor.execute(
             '''
@@ -167,6 +182,7 @@ def add_service():
         )
 
         conn.commit()
+
         conn.close()
 
         return redirect('/dashboard')
