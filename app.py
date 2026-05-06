@@ -12,23 +12,21 @@ def home():
 # login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if request.method == 'POST':
+
         username = request.form['username']
         password = request.form['password']
 
-        conn = sqlite3.connect('service_center.db')
-        cursor = conn.cursor()
+        if username == "admin" and password == "admin123":
 
-        cursor.execute("SELECT * FROM admins WHERE username=? AND password=?", (username, password))
-        admin = cursor.fetchone()
-
-        conn.close()
-
-        if admin:
             session['admin'] = username
+
             return redirect('/dashboard')
+
         else:
-            return render_template('login.html', error='Invalid credentials. Please try again.')
+
+            return "Invalid Credentials"
 
     return render_template('login.html')
 
@@ -37,26 +35,54 @@ def login():
 # dashboard page
 @app.route('/dashboard')
 def dashboard():
+
     if 'admin' not in session:
         return redirect('/login')
+
     conn = sqlite3.connect('service_center.db')
-    cursor = conn.cursor()  
 
-    cursor.execute("SELECT * FROM customers")
-    total_customers = cursor.fetchone()[0]
+    cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM services")
-    total_services = cursor.fetchone()[0]
+    cursor.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            phone TEXT,
+            vehicle_number TEXT
+        )
+        '''
+    )
 
-    cursor.execute("SELECT SUM(Bill) FROM services")
-    revenue = cursor.fetchone()[0]
+    cursor.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS services (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_name TEXT,
+            service_type TEXT,
+            amount INTEGER
+        )
+        '''
+    )
+
+    conn.commit()
+
+    cursor.execute("SELECT COUNT(*) FROM customers")
+    customers = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM services")
+    services = cursor.fetchone()[0]
+
+    revenue = 0
 
     conn.close()
 
-    return render_template('dashboard.html',
-                            total_customers=total_customers, 
-                            total_services=total_services,
-                            revenue=revenue)
+    return render_template(
+        'dashboard.html',
+        customers=customers,
+        services=services,
+        revenue=revenue
+    )
 
 
 # add customers
@@ -64,25 +90,40 @@ def dashboard():
 def add_customer():
 
     if request.method == 'POST':
+
         name = request.form['name']
-        email = request.form['email']
         phone = request.form['phone']
-        address = request.form['address']
-        vechile_model = request.form['vechile_model']
-        vechile_number = request.form['vechile_number']
+        vehicle_number = request.form['vehicle_number']
 
         conn = sqlite3.connect('service_center.db')
+
         cursor = conn.cursor()
 
-        cursor.execute("INSERT INTO customers (name, email, phone, address, vechile_model, vechile_number) VALUES (?, ?, ?, ?, ?, ?)",
-                       (name, email, phone, address, vechile_model, vechile_number))
-        
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS customers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                phone TEXT,
+                vehicle_number TEXT
+            )
+            '''
+        )
+
+        cursor.execute(
+            '''
+            INSERT INTO customers(name, phone, vehicle_number)
+            VALUES (?, ?, ?)
+            ''',
+            (name, phone, vehicle_number)
+        )
+
         conn.commit()
         conn.close()
 
-        return redirect('/customers')
-        
-    return render_template('customer.html')
+        return redirect('/dashboard')
+
+    return render_template('add_customer.html')
 
 # view customers
 @app.route('/customers')
@@ -98,33 +139,42 @@ def customers():
     return render_template('customers.html', data=data)
 
 # add service
-@app.route('/add_service', methods=['GET', 'POST']) 
+@app.route('/add_service', methods=['GET', 'POST'])
 def add_service():
 
-    conn = sqlite3.connect('service_center.db')
-    cursor = conn.cursor()  
-
-    cursor.execute("SELECT * FROM customers")
-    customers = cursor.fetchall()
-
     if request.method == 'POST':
-        customer_id = request.form['customer_id']
-        service_type = request.form['service_type']
-        Mechanic_name = request.form['Mechanic_name']
-        service_date = request.form['service_date']
-        status = request.form['status']
-        Bill = request.form['Bill']
 
-        cursor.execute("INSERT INTO services (customer_id, service_type, Mechanic_name, service_date, status, Bill) VALUES (?, ?, ?, ?, ?, ?)",
-                       (customer_id, service_type, Mechanic_name, service_date, status, Bill))
-        
+        customer_name = request.form['customer_name']
+        service_type = request.form['service_type']
+
+        conn = sqlite3.connect('service_center.db')
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS services (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_name TEXT,
+                service_type TEXT
+            )
+            '''
+        )
+
+        cursor.execute(
+            '''
+            INSERT INTO services(customer_name, service_type)
+            VALUES (?, ?)
+            ''',
+            (customer_name, service_type)
+        )
+
         conn.commit()
         conn.close()
 
-        return redirect('/services')
-    conn.close()
-    return render_template('service.html', customers=customers)
+        return redirect('/dashboard')
 
+    return render_template('add_service.html')
 # view services
 @app.route('/services')
 def services():
