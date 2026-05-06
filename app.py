@@ -126,19 +126,25 @@ def add_customer():
     return render_template('add_customer.html')
 
 # view customers
-@app.route('/customers')
-def customers():
+@app.route('/view_customers')
+def view_customers():
+
     conn = sqlite3.connect('service_center.db')
+
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM customers")
-    data = cursor.fetchall()
+
+    customers = cursor.fetchall()
 
     conn.close()
 
-    return render_template('customers.html', data=data)
+    return render_template(
+        'view_customers.html',
+        customers=customers
+    )
 
-# add service
+# add services
 @app.route('/add_service', methods=['GET', 'POST'])
 def add_service():
 
@@ -153,17 +159,8 @@ def add_service():
 
         cursor.execute(
             '''
-            CREATE TABLE IF NOT EXISTS services (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_name TEXT,
-                service_type TEXT
-            )
-            '''
-        )
-
-        cursor.execute(
-            '''
-            INSERT INTO services(customer_name, service_type)
+            INSERT INTO services
+            (customer_name, service_type)
             VALUES (?, ?)
             ''',
             (customer_name, service_type)
@@ -175,22 +172,25 @@ def add_service():
         return redirect('/dashboard')
 
     return render_template('add_service.html')
+
 # view services
-@app.route('/services')
-def services():
+@app.route('/view_services')
+def view_services():
+
     conn = sqlite3.connect('service_center.db')
+
     cursor = conn.cursor()
 
-    cursor.execute('''
-    SELECT services.id, customers.name, services.service_type, services.Mechanic_name, services.service_date, services.status, services.Bill
-    FROM services
-    JOIN customers ON services.customer_id = customers.id
-    ''')
-    data = cursor.fetchall()
+    cursor.execute("SELECT * FROM services")
+
+    services = cursor.fetchall()
 
     conn.close()
 
-    return render_template('services.html', data=data)
+    return render_template(
+        'view_services.html',
+        services=services
+    )
 
 # logout
 @app.route('/logout')
