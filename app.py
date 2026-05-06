@@ -150,8 +150,8 @@ def add_service():
 
     if request.method == 'POST':
 
-        customer_name = request.form['customer_name']
-        service_type = request.form['service_type']
+        customer_name = request.form.get('customer_name')
+        service_type = request.form.get('service_type')
 
         conn = sqlite3.connect('service_center.db')
 
@@ -173,6 +173,7 @@ def add_service():
         return redirect('/dashboard')
 
     return render_template('add_service.html')
+
 
 # view services
 @app.route('/view_services')
