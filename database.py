@@ -4,9 +4,13 @@ conn = sqlite3.connect('service_center.db')
 
 cursor = conn.cursor()
 
+# delete old tables if they exist
+cursor.execute("DROP TABLE IF EXISTS customers")
+cursor.execute("DROP TABLE IF EXISTS services")
+
 # customers table
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS customers (
+CREATE TABLE customers (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -20,7 +24,7 @@ CREATE TABLE IF NOT EXISTS customers (
 
 # services table
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS services (
+CREATE TABLE services (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -34,4 +38,4 @@ conn.commit()
 
 conn.close()
 
-print("Database Created Successfully")
+print("Fresh Database Created Successfully")
